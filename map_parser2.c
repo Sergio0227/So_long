@@ -6,80 +6,91 @@
 /*   By: sandre-a <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 14:00:42 by sandre-a          #+#    #+#             */
-/*   Updated: 2024/04/23 01:08:00 by sandre-a         ###   ########.fr       */
+/*   Updated: 2024/05/03 00:46:10 by sandre-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
-int	check_items(t_mlx_data *d)
+int	**allocate_visited(int rows, int cols)
 {
-	int	i;
-	int	x;
-
-	i = 0;
-	while (d->map[i])
-	{
-		x = 0;
-		while (d->map[i][x])
-		{
-			if (ft_memchr("CEP", d->map[i][x], 3))
-				if (check_path(d, i, x))
-					return (1);
-			x++;
-		}
-		i++;
-	}
-	if (d->it.col && d->it.exit == 1 && d->it.start == 1)
-		return (0);
-	return (1);
-}
-
-int	check_path(t_mlx_data *data, int i, int x)
-{
-	if (data->map[i + 1][x] == '1' && data->map[i - 1][x] == '1'
-		&& data->map[i][x + 1] == '1' && data->map[i][x - 1] == '1')
-		return (1);
-	if (data->map[i][x] == 'C')
-		data->it.col += 1;
-	if (data->map[i][x] == 'E')
-	{
-		data->it.exit += 1;
-		data->it.exit_x = x * PIXELS;
-		data->it.exit_y = i * PIXELS;
-	}
-	if (data->map[i][x] == 'P')
-	{
-		data->it.start += 1;
-		data->goku.pos_x = x * PIXELS;
-		data->goku.pos_y = i * PIXELS;
-	}
-	return (0);
-}
-
-int	populate_map(t_mlx_data *d)
-{
+	int	**visited;
 	int	i;
 	int	j;
-	int	pos_x;
-	int	pos_y;
 
-	pos_y = 0;
-	i = 0;
-	while (d->map[i])
+	visited = (int **)malloc(rows * sizeof(int *));
+	i = -1;
+	while (++i < rows)
+		visited[i] = (int *)malloc(cols * sizeof(int));
+	i = -1;
+	while (++i < rows)
 	{
-		j = 0;
-		pos_x = 0;
-		while (d->map[i][j])
-		{
-			select_img(d, d->map[i][j], pos_x, pos_y);
-			pos_x += PIXELS;
-			j++;
-		}
-		pos_y += PIXELS;
+		j = -1;
+		while (++j < cols)
+			visited[i][j] = 0;
+	}
+	return (visited);
+}
+
+int	is_valid_path(t_mlx_data *d)
+{
+	int	**visited;
+	int	flag;
+	int	i;
+	int	j;
+
+	flag = 0;
+	visited = allocate_visited(d->rows, d->cols);
+	dfs(d, d->goku.pos_y / PIXELS, d->goku.pos_x / PIXELS, visited);
+	i = -1;
+	while (++i < d->rows)
+	{
+		j = -1;
+		while (++j < d->cols)
+			if ((d->map[i][j] == 'C' || d->map[i][j] == 'E') && !visited[i][j])
+				flag = 1;
+	}
+	j = -1;
+	while (++j < d->rows)
+		free(visited[j]);
+	free(visited);
+	if (flag)
+		return (1);
+	return (0);
+}
+
+int	is_valid_position(t_mlx_data *data, int x, int y)
+{
+	return (x >= 0 && x < data->rows && y >= 0 && y < data->cols
+		&& data->map[x][y] != '1');
+}
+
+void	dfs(t_mlx_data *d, int x, int y, int **visited)
+{
+	int	dx[4];
+	int	dy[4];
+	int	i;
+	int	new_x;
+	int	new_y;
+
+	dx[0] = -1;
+	dx[1] = 1;
+	dx[2] = 0;
+	dx[3] = 0;
+	dy[0] = 0;
+	dy[1] = 0;
+	dy[2] = -1;
+	dy[3] = 1;
+	visited[x][y] = 1;
+	i = 0;
+	while (i < 4)
+	{
+		new_x = x + dx[i];
+		new_y = y + dy[i];
+		if (is_valid_position(d, new_x, new_y) && !visited[new_x][new_y])
+			dfs(d, new_x, new_y, visited);
 		i++;
 	}
-	return (0);
 }
 
 void	collectable(t_mlx_data *data, int x, int i, int key)

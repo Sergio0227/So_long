@@ -24,11 +24,11 @@
 typedef struct s_map_items
 {
 	int			col;
-	int			start;
 	int			exit;
+	int			start;
+	t_img		bone;
 	t_img		bg;
 	t_img		blk;
-	t_img		bone;
 	t_img		exit_game;
 	int			exit_x;
 	int			exit_y;
@@ -48,25 +48,30 @@ typedef struct s_mlx_data
 	char		**map;
 	t_map_items	it;
 	t_player	goku;
-	int			score;
+	int			rows;
+	int			cols;
 	int			moves;
-
+	int			score;
 }				t_mlx_data;
 
 int				input(int key, t_mlx_data *data);
 void			print_title(void);
 char			**read_map(int fd, char *map_name);
-int				map_checker(char **map, int last_l);
-int				valid_map_input(t_mlx_data *data);
+int				map_format(char **map, int last_l);
 void			free_map(char **map);
 int				count_lines(int fd);
-int				check_items(t_mlx_data *data);
 int				render_win(t_mlx_data *data);
-int				exit_game(t_mlx_data *data);
-int				populate_map(t_mlx_data *data);
-void			load_img(t_mlx_data *d);
-void			select_img(t_mlx_data *d, char square, int pos_x, int pos_y);
-void			check_wall(t_mlx_data *data, int key);
-int				check_path(t_mlx_data *data, int i, int x);
+int				exit_game(t_mlx_data *d);
+
+int				is_valid_path(t_mlx_data *data);
+int				is_valid_position(t_mlx_data *data, int x, int y);
+void			dfs(t_mlx_data *d, int x, int y, int **visited);
+int				check_items(t_mlx_data *d);
+int				set_coord(t_mlx_data *data, int i, int x);
+int				valid_map_input(t_mlx_data *data);
 void			collectable(t_mlx_data *data, int x, int i, int key);
+int				populate_map(t_mlx_data *d);
+void			load_img(t_mlx_data *d);
+void			check_wall_mov(t_mlx_data *data, int key);
+
 #endif

@@ -1,7 +1,7 @@
 SRC = 	main.c \
 		map_parser.c \
 		map_parser2.c \
-		so_long_utils.c \
+		so_long_utils.c
 
 NAME = so_long
 OBJS = ${SRC:.c=.o}
